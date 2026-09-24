@@ -1,0 +1,662 @@
+openapi: 3.0.3
+
+info:
+  title: CityFest Guide API
+  description: |
+    API для пет-проекта приложения по поиску городских мероприятий CityFest Guide.
+    Позволяет получать ленту событий, просмотреть карточку события,
+    оформлять заказы на билеты, добавлять события в избранное
+    и модерировать заявки организаторов.
+  version: 1.0.0
+  contact:
+    name: Ионов Максим
+    email: ionow.maksim2018@yandex.ru
+
+servers:
+  - url: http://localhost:8000/v1
+    description: Локальная разработка
+
+tags:
+  - name: События
+    description: Работа с событиями
+  - name: Заказы
+    description: Операции с заказами и билетами
+  - name: Избранное
+    description: Редактирование списка избранных событий
+  - name: Модерация
+    description: Модерация событий
+
+paths:
+
+  /events:
+    get:
+      tags: [События]
+      summary: Получить ленту событий
+      description: |
+        Возвращает список опубликованных событий с возможностью
+        фильтрации по дате, категории, району и цене.
+        Используется на главном экране приложения.
+      operationId: getEvents
+      parameters:
+        - name: date_from
+          in: query
+          description: Начало диапазона дат (ISO 8601)
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2026-09-12T00:00:00Z"
+        - name: date_to
+          in: query
+          description: Конец диапазона дат (ISO 8601)
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2026-09-15T00:00:00Z"
+        - name: category_id
+          in: query
+          description: ID категории события
+          required: false
+          schema:
+            type: integer
+            example: 3
+        - name: district
+          in: query
+          description: Район города
+          required: false
+          schema:
+            type: string
+            example: "Центр"
+        - name: price_max
+          in: query
+          description: Максимальная цена билета
+          required: false
+          schema:
+            type: number
+            example: 3000
+        - name: page
+          in: query
+          description: Номер страницы
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+            example: 1
+        - name: limit
+          in: query
+          description: Размер страницы (максимум 100)
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+            example: 20
+      responses:
+        '200':
+          description: Список событий успешно получен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventShort'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+
+  /events/{id}:
+    get:
+      tags: [События]
+      summary: Получить карточку события
+      description: |
+        Возвращает подробную информацию о событии: описание, фото,
+        площадку, схему зала и доступные типы билетов.
+      operationId: getEventById
+      parameters:
+        - name: id
+          in: path
+          description: ID события
+          required: true
+          schema:
+            type: integer
+            example: 101
+      responses:
+        '200':
+          description: Событие найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+
+  /orders:
+    post:
+      tags: [Заказы]
+      summary: Создать заказ на покупку билетов
+      description: |
+        Создаёт заказ со статусом `pending` и возвращает ссылку
+        на оплату. Заказ действует 15 минут, после чего автоматически
+        отменяется, если не был оплачен.
+      operationId: createOrder
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Заказ успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+
+  /events/{id}/favorite:
+    post:
+      tags: [Избранное]
+      summary: Добавить событие в избранное
+      description: |
+        Добавляет событие в список «Желаемое» текущего пользователя.
+        Если событие уже в избранном - возвращает 409.
+      operationId: addFavorite
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: ID события
+          required: true
+          schema:
+            type: integer
+            example: 101
+      responses:
+        '201':
+          description: Событие добавлено в избранное
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorite'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+
+  /moderation/events:
+    get:
+      tags: [Модерация]
+      summary: Получить очередь модерации
+      description: |
+        Возвращает список событий, ожидающих ручной проверки модератором.
+        Отсортирован по убыванию балла автоматической проверки -
+        сначала самые подозрительные.
+      operationId: getModerationQueue
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: Фильтр по статусу модерации
+          required: false
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+            default: pending
+        - name: min_auto_score
+          in: query
+          description: Минимальный балл автоматической проверки
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 100
+            example: 70
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Очередь модерации успешно получена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ModerationItem'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT-токен, полученный при авторизации
+
+
+  schemas:
+
+    EventShort:
+      type: object
+      description: Краткая информация о событии для ленты
+      properties:
+        id:
+          type: integer
+          example: 101
+        title:
+          type: string
+          example: "Фестиваль настольных игр"
+        photo_url:
+          type: string
+          format: uri
+          example: "https://cityfestguide.app/events/101.jpg"
+        start_at:
+          type: string
+          format: date-time
+          example: "2026-09-12T19:00:00Z"
+        is_free:
+          type: boolean
+          example: false
+        min_price:
+          type: number
+          description: Минимальная цена среди всех типов билетов. 0 для бесплатных.
+          example: 1500
+        category:
+          $ref: '#/components/schemas/Category'
+        venue:
+          $ref: '#/components/schemas/VenueShort'
+
+    EventDetail:
+      type: object
+      description: Подробная информация о событии
+      properties:
+        id:
+          type: integer
+          example: 101
+        title:
+          type: string
+          example: "Фестиваль настольных игр"
+        description:
+          type: string
+          example: "В ходе фестиваля будут представлены разнообразные настольные игры и варгеймы, а также стол со спортивной мафией"
+        photo_url:
+          type: string
+          format: uri
+          example: "https://cityfestguide.app/events/101.jpg"
+        start_at:
+          type: string
+          format: date-time
+          example: "2026-09-12T19:00:00Z"
+        end_at:
+          type: string
+          format: date-time
+          example: "2026-09-12T21:30:00Z"
+        is_free:
+          type: boolean
+          example: false
+        status:
+          type: string
+          enum: [published, cancelled]
+          example: published
+        category:
+          $ref: '#/components/schemas/Category'
+        venue:
+          $ref: '#/components/schemas/VenueDetail'
+        ticket_types:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketType'
+
+    Category:
+      type: object
+      description: Категория события
+      properties:
+        id:
+          type: integer
+          example: 3
+        name:
+          type: string
+          example: "Фестивали"
+
+    VenueShort:
+      type: object
+      description: Краткая информация о площадке
+      properties:
+        id:
+          type: integer
+          example: 12
+        name:
+          type: string
+          example: "Центральный дом культуры"
+        district:
+          type: string
+          example: "Центр"
+
+    VenueDetail:
+      type: object
+      description: Подробная информация о площадке
+      properties:
+        id:
+          type: integer
+          example: 12
+        name:
+          type: string
+          example: "Центральный дом культуры"
+        address:
+          type: string
+          example: "ул. Ленина, 11к1"
+        district:
+          type: string
+          example: "Центр"
+        hall_scheme_url:
+          type: string
+          format: uri
+          description: Ссылка на схему зала
+          example: "https://cityfestguide.app/venues/12/scheme.png"
+
+    TicketType:
+      type: object
+      description: Тип билета на событие
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Стандарт"
+        price:
+          type: number
+          example: 5000
+
+    CreateOrderRequest:
+      type: object
+      description: Запрос на создание заказа
+      required:
+        - event_id
+        - tickets
+      properties:
+        event_id:
+          type: integer
+          example: 101
+        tickets:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+              - ticket_type_id
+              - quantity
+            properties:
+              ticket_type_id:
+                type: integer
+                example: 1
+              quantity:
+                type: integer
+                minimum: 1
+                example: 2
+
+    Order:
+      type: object
+      description: Заказ на покупку билетов
+      properties:
+        id:
+          type: integer
+          example: 5001
+        user_id:
+          type: integer
+          example: 42
+        event_id:
+          type: integer
+          example: 101
+        total_amount:
+          type: number
+          example: 11500
+        status:
+          type: string
+          enum: [pending, paid, refunded, cancelled]
+          example: pending
+        payment_url:
+          type: string
+          format: uri
+          description: Ссылка на оплату заказа
+          example: "https://pay.cityfestguide.app/session/abc123"
+        expires_at:
+          type: string
+          format: date-time
+          description: Время, до которого нужно оплатить заказ
+          example: "2026-09-10T12:15:00Z"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-09-10T12:00:00Z"
+
+    Favorite:
+      type: object
+      description: Запись о добавлении события в избранное
+      properties:
+        id:
+          type: integer
+          example: 7001
+        user_id:
+          type: integer
+          example: 42
+        event_id:
+          type: integer
+          example: 101
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-09-10T12:05:00Z"
+
+    ModerationItem:
+      type: object
+      description: Событие в очереди модерации
+      properties:
+        event_id:
+          type: integer
+          example: 205
+        title:
+          type: string
+          example: "Закрытая вечеринка"
+        organizer:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 8
+            company_name:
+              type: string
+              example: "ООО Х"
+            inn:
+              type: string
+              example: "7712345678"
+            is_verified:
+              type: boolean
+              example: false
+        auto_check:
+          type: object
+          properties:
+            auto_score:
+              type: integer
+              description: Балл риска от автоматической проверки (0–100)
+              example: 85
+            document_match:
+              type: boolean
+              example: false
+            venue_confirmed:
+              type: boolean
+              example: false
+            duplicate_found:
+              type: boolean
+              example: true
+            checked_at:
+              type: string
+              format: date-time
+              example: "2026-09-10T11:55:00Z"
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+          example: pending
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-09-10T11:50:00Z"
+
+    Pagination:
+      type: object
+      description: Метаданные пагинации
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 87
+        total_pages:
+          type: integer
+          example: 5
+
+    Error:
+      type: object
+      description: Единый формат ошибки
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Машиночитаемый код ошибки
+              example: "EVENT_NOT_FOUND"
+            message:
+              type: string
+              description: Человекочитаемое описание
+              example: "Event with id 101 not found"
+
+
+  responses:
+
+    BadRequest:
+      description: Неверные параметры запроса
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: INVALID_PARAMETER
+              message: "date_from must be ISO 8601"
+
+    Unauthorized:
+      description: Требуется авторизация
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: "Token is missing"
+
+    Forbidden:
+      description: Недостаточно прав для выполнения действия
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: FORBIDDEN
+              message: "Moderator role required"
+
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: EVENT_NOT_FOUND
+              message: "Event with id 101 not found"
+
+    Conflict:
+      description: Конфликт данных
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: NOT_ENOUGH_TICKETS
+              message: "No tickets left"
+
+    InternalError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: INTERNAL_ERROR
+              message: "Something went wrong"
