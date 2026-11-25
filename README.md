@@ -28,7 +28,7 @@
 | # | Артефакт | Файл | Инструмент |
 |---|---|---|---|
 | 1 | Vision & Scope | Vision and Scope документ.docx | MS Word |
-| 2 | User Story (15 шт.) | User Story.docx | MS Word |
+| 2 | User Story (10 шт.) | User Story.docx | MS Word |
 | 3 | BPMN-диаграммы | [BPMN/](BPMN/) | draw.io |
 | 4 | Use Case Diagram | Use Case.png | draw.io |
 | 5 | Концептуальная и Логическая ERD | [ERD/](ERD/) | dbdiagram.io и draw.io |
