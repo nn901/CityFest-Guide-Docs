@@ -50,8 +50,8 @@
 
 ## Как посмотреть проект
 
-1. **Начните с** [Vision & Scope](Vision and Scope документ.docx)
-2. **Затем** [User Stories](User Story.docx)
+1. **Начните с** Vision & Scope в файле "Vision and Scope документ.pdf"
+2. **Затем** - User Stories в файле User Story.pdf
 3. **Диаграммы** - в папках 'BPMN', 'ERD' и в файле 'Use Case.png' 
 4. **API** - откройте 'openapi.yaml' в [Swagger Editor](https://editor.swagger.io)
 5. **SQL** - файлы в папке 'SQL', можно запустить в PostgreSQL
