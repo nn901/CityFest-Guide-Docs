@@ -41,7 +41,7 @@
 
 ## Стек и инструменты
 
-- **Моделирование:** BPMN 2.0, UML (Use Case), ERD (Crow's Foot)
+- **Моделирование:** BPMN 2.0, UML (Use Case), ERD (Crow's Foot, Нотация Чена)
 - **Документация:** Markdown, OpenAPI 3.0
 - **Данные:** PostgreSQL, DBML
 - **Инструменты:** draw.io, dbdiagram.io, Swagger Editor, Postman, Figma
