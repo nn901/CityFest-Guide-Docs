@@ -69,7 +69,6 @@
 
 ## Потенциальные улучшения для проекта
 
-- Sequence Diagram для сценария покупки билета
 - Risk Register
 - Простой бэкенд на FastAPI + PostgreSQL
 
