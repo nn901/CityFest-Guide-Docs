@@ -34,7 +34,7 @@
 | 5 | Концептуальная и Логическая ERD | [ERD/](ERD/) | dbdiagram.io и draw.io |
 | 6 | SQL-запросы (5 шт.) | [SQL/](SQL/) | PostgreSQL |
 | 7 | REST API (OpenAPI 3.0) | [openapi.yaml](openapi.yaml) | Swagger |
-| 8 | Интерактивный прототип в Figma | Ссылка на прототип Figma.txt | Figma |
+| 8 | Интерактивный прототип в Figma | [Ссылка на прототип Figma](https://www.figma.com/design/lkPBIejoHNUd12z3rZFdMZ/CityFest-Guide?node-id=16-84&t=DjxqhEmaX6Fg20MK-1) | Figma |
 
 ---
 
