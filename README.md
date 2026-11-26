@@ -28,9 +28,9 @@
 | # | Артефакт | Файл | Инструмент |
 |---|---|---|---|
 | 1 | Vision & Scope | [Vision and Scope документ.pdf](<Vision and Scope документ.pdf>) | MS Word |
-| 2 | User Story (10 шт.) | User Story.docx | MS Word |
+| 2 | User Story (10 шт.) | [User Story.pdf](<User Story.pdf>) | MS Word |
 | 3 | BPMN-диаграммы | [BPMN/](BPMN/) | draw.io |
-| 4 | Use Case Diagram | Use Case.png | draw.io |
+| 4 | Use Case Diagram | [Use Case.png](<Use Case.png>) | draw.io |
 | 5 | Концептуальная и Логическая ERD | [ERD/](ERD/) | dbdiagram.io и draw.io |
 | 6 | SQL-запросы (5 шт.) | [SQL/](SQL/) | PostgreSQL |
 | 7 | REST API (OpenAPI 3.0) | [openapi.yaml](openapi.yaml) | Swagger |
