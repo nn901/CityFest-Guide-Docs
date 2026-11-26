@@ -27,7 +27,7 @@
 
 | # | Артефакт | Файл | Инструмент |
 |---|---|---|---|
-| 1 | Vision & Scope | Vision and Scope документ.docx | MS Word |
+| 1 | Vision & Scope | [Vision and Scope документ.pdf](./Vision and Scope документ.pdf) | MS Word |
 | 2 | User Story (10 шт.) | User Story.docx | MS Word |
 | 3 | BPMN-диаграммы | [BPMN/](BPMN/) | draw.io |
 | 4 | Use Case Diagram | Use Case.png | draw.io |
