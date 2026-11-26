@@ -50,11 +50,11 @@
 
 ## Как посмотреть проект
 
-1. **Начните с** Vision & Scope в файле 'Vision and Scope документ.pdf'
-2. **Затем** - User Stories в файле 'User Story.pdf'
-3. **Диаграммы** - в папках 'BPMN', 'ERD' и в файле 'Use Case.png' 
+1. **Начните с** файла [Vision and Scope документ.pdf](<Vision and Scope документ.pdf>)
+2. **Затем** - User Stories в файле [User Story.pdf](<User Story.pdf>)
+3. **Диаграммы** - в папках [BPMN/](BPMN/), [ERD/](ERD/) и в файле [Use Case.png](<Use Case.png>) 
 4. **API** - откройте 'openapi.yaml' в [Swagger Editor](https://editor.swagger.io)
-5. **SQL** - файлы в папке 'SQL', можно запустить в PostgreSQL
+5. **SQL** - файлы в папке [SQL/](SQL/), можно запустить в PostgreSQL
 6. **Опробовать прототип** - можно открыть по ссылке https://www.figma.com/design/lkPBIejoHNUd12z3rZFdMZ/CityFest-Guide?node-id=16-84&t=DjxqhEmaX6Fg20MK-1 которая также хранится в файле 'Ссылка на прототип Figma.txt'
 
 ---
